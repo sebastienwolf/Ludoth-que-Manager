@@ -35,9 +35,25 @@ C# · .NET 10 · ASP.NET Core · Blazor · Entity Framework Core · SQL Server �
 
 ## Lancer le projet
 
-Prérequis : [SDK .NET 10](https://dotnet.microsoft.com/download)
+Prérequis : [SDK .NET 10](https://dotnet.microsoft.com/download) et [Docker](https://www.docker.com/)
+
+1. Lancer SQL Server dans Docker :
 
 ```bash
-dotnet build
+docker run -d --name ludotheque-sql \
+  -e 'ACCEPT_EULA=Y' \
+  -e 'MSSQL_SA_PASSWORD=<ton-mot-de-passe>' \
+  -p 1433:1433 \
+  -v ludotheque-sql-data:/var/opt/mssql \
+  mcr.microsoft.com/mssql/server:2022-latest
+```
+
+2. Configurer la connexion : copier `src/LudothequeManager/appsettings.Local.example.json` en `appsettings.Local.json` (même dossier) et remplacer `<your-password>` par le mot de passe SQL Server. Ce fichier est ignoré par git.
+
+3. Créer la base et lancer l'application :
+
+```bash
+dotnet tool install --global dotnet-ef
+dotnet ef database update --project src/LudothequeManager
 dotnet run --project src/LudothequeManager
 ```
