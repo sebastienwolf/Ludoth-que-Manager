@@ -7,8 +7,12 @@ public class Game
     public string Publisher { get; set; } = "";
     public bool IsAvailable { get; private set; } = true;
 
-    public void CheckOut()
+    public void CheckOut(Member member)
     {
+        if (!member.IsActive)
+        {
+            throw new InvalidOperationException($"{member.FullName} is not an active member.");
+        }
         if (!IsAvailable)
         {
             throw new InvalidOperationException($"{Name} is already checked out.");
