@@ -15,8 +15,8 @@ C# · .NET 10 · ASP.NET Core · Blazor · Entity Framework Core · SQL Server �
 
 ## Feuille de route
 
-- [ ] **Étape 1** — C# et fonctionnement de .NET (application console)
-- [ ] **Étape 2** — Modèle Jeu / Adhérent
+- [x] **Étape 1** — C# et fonctionnement de .NET (application console)
+- [x] **Étape 2** — Modèle Jeu / Adhérent
 - [ ] **Étape 3** — Entity Framework Core + base de données
 - [ ] **Étape 4** — Gestion des prêts
 - [ ] **Étape 5** — Interface Blazor
