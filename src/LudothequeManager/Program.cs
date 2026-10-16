@@ -47,14 +47,14 @@ if (!db.Members.Any())
 }
 
 var dixit = db.Games.First(game => game.Name == "Dixit");
-Console.WriteLine($"Dixit available: {dixit.IsAvailable}");
-if (dixit.IsAvailable)
+Console.WriteLine($"Dixit available: {dixit.Status == GameStatus.Available}");
+if (dixit.Status == GameStatus.Available)
 {
     dixit.CheckOut(db.Members.First(member => member.FirstName == "Alice"));
     db.SaveChanges();
 }
 
-Console.WriteLine($"Dixit available: {dixit.IsAvailable}");
+Console.WriteLine($"Dixit available: {dixit.Status == GameStatus.Available}");
 
 
 // var members = new List<Member>

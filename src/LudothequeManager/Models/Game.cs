@@ -5,7 +5,7 @@ public class Game
     public int Id { get; set; }
     public string Name { get; set; } = "";
     public string Publisher { get; set; } = "";
-    public bool IsAvailable { get; private set; } = true;
+    public GameStatus Status { get; private set; } = GameStatus.Available;
 
     public void CheckOut(Member member)
     {
@@ -13,16 +13,16 @@ public class Game
         {
             throw new InvalidOperationException($"{member.FullName} is not an active member.");
         }
-        if (!IsAvailable)
+        if (Status != GameStatus.Available)
         {
-            throw new InvalidOperationException($"{Name} is already checked out.");
+            throw new InvalidOperationException($"{Name} is not available ({Status}).");
         }
 
-        IsAvailable = false;
+        Status = GameStatus.CheckedOut;
     }
 
     public void Return()
     {
-        IsAvailable = true;
+        Status = GameStatus.Available;
     }
 }
