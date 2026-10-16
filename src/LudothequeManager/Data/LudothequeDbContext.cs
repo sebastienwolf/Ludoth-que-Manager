@@ -8,6 +8,7 @@ public class LudothequeDbContext : DbContext
 {
     public DbSet<Game> Games => Set<Game>();
     public DbSet<Member> Members => Set<Member>();
+    public DbSet<Loan> Loans => Set<Loan>();
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -25,5 +26,18 @@ public class LudothequeDbContext : DbContext
         }
 
         optionsBuilder.UseSqlServer(connectionString);
+    }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Loan>()
+            .HasOne(loan => loan.Game)
+            .WithMany()
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Loan>()
+            .HasOne(loan => loan.Member)
+            .WithMany()
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }
