@@ -1,5 +1,6 @@
 using LudothequeManager.Models;
 using LudothequeManager.Data;
+using Microsoft.EntityFrameworkCore;
 
 using var db = new LudothequeDbContext();
 
@@ -46,8 +47,16 @@ if (!db.Members.Any())
     db.SaveChanges();
 }
 
-var dixit = db.Games.First(game => game.Name == "Dixit");
-Console.WriteLine($"Dixit available: {dixit.Status == GameStatus.Available}");
+var catan = db.Games
+    .Include(game => game.Loans)
+    .ThenInclude(loan => loan.Member)
+    .First(game => game.Name == "Catan");
+
+var dixit = db.Games
+    .Include(game => game.Loans)
+    .ThenInclude(loan => loan.Member)
+    .First(game => game.Name == "Dixit");
+
 if (dixit.Status == GameStatus.Available)
 {
     dixit.CheckOut(db.Members.First(member => member.FirstName == "Alice"));
@@ -55,6 +64,14 @@ if (dixit.Status == GameStatus.Available)
 }
 
 Console.WriteLine($"Dixit available: {dixit.Status == GameStatus.Available}");
+
+if (catan.Status == GameStatus.Available)
+{
+    catan.CheckOut(db.Members.First(member => member.FirstName == "Bruno"));
+    db.SaveChanges();
+}
+
+Console.WriteLine($"{catan.Name}, {string.Join(", ", catan.Loans.Select(loan => $"{loan.Member.FullName} {loan.CheckedOutAt.ToLocalTime():dd/MM/yyyy HH:mm}"))} ");
 
 
 // var members = new List<Member>

@@ -32,7 +32,7 @@ public class LudothequeDbContext : DbContext
     {
         modelBuilder.Entity<Loan>()
             .HasOne(loan => loan.Game)
-            .WithMany()
+            .WithMany(game => game.Loans)
             .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<Loan>()
