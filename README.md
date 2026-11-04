@@ -20,6 +20,10 @@ C# · .NET 10 · ASP.NET Core · Blazor · Entity Framework Core · SQL Server �
 - [x] **Étape 3** — Entity Framework Core + base de données
 - [x] **Étape 4** — Gestion des prêts
 - [ ] **Étape 5** — Interface Blazor
+  - [x] Catalogue : affichage, recherche, filtre et détails
+  - [x] Ajout, modification et suppression des jeux
+  - [ ] Gestion des adhérents
+  - [ ] Gestion des prêts
 - [ ] **Étape 6** — Retours + observations
 - [ ] **Étape 7** — Règles métier + validation
 - [ ] **Étape 8** — Tests xUnit
