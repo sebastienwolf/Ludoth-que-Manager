@@ -7,11 +7,14 @@
 
 <h1>Catalogue des jeux</h1>
 
+<input type="search" class="form-control" placeholder="Rechercher un jeu" aria-label="Rechercher un jeu"
+       @bind="searchText" @bind:event="oninput" />
 <table class="table">
     <label>
         <input type="checkbox" @bind="showAvailableOnly" />
         Afficher uniquement les jeux disponibles
     </label>
+    
     <thead>
         <tr>
             <th>Numéro</th>
@@ -21,8 +24,9 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var game in games.Where(
-     game => !showAvailableOnly || game.Status == GameStatus.Available))
+        @foreach (var game in games.Where(game =>
+            (!showAvailableOnly || game.Status == GameStatus.Available)
+            && game.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase)))
         {
             <tr>
                 <td>@game.Id</td>
@@ -38,6 +42,7 @@
 
     private List<Game> games = new();
     private bool showAvailableOnly = false;
+    private string searchText = "";
     protected override void OnInitialized()
     {
         using LudothequeDbContext? db = new LudothequeDbContext();
