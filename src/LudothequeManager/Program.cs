@@ -74,6 +74,16 @@ if (catan.Status == GameStatus.Available)
 Console.WriteLine($"{catan.Name}, {string.Join(", ", catan.Loans.Select(loan => $"{loan.Member.FullName} {loan.CheckedOutAt.ToLocalTime():dd/MM/yyyy HH:mm}"))} ");
 
 
+if (catan.Status == GameStatus.CheckedOut)
+{
+    Console.WriteLine(catan.Status);
+    catan.Return();
+    db.SaveChanges();
+}
+var lastLoanCatan = catan.Loans.OrderByDescending(loan => loan.CheckedOutAt).First();
+Console.WriteLine($"Statut : {catan.Status}, Date de retour : {lastLoanCatan.ReturnedAt?.ToLocalTime():dd/MM/yyyy HH:mm}");
+
+
 // var members = new List<Member>
 // {
 //     new Member(1, "Alice", "Martin", "alice.martin@example.com"),
