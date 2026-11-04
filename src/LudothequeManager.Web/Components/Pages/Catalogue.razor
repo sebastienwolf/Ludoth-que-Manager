@@ -9,6 +9,10 @@
 
 <input type="search" class="form-control" placeholder="Rechercher un jeu" aria-label="Rechercher un jeu"
        @bind="searchText" @bind:event="oninput" />
+
+
+<p>@FilteredGames.Count() résultat(s) sur @games.Count() jeux </p>
+
 <table class="table">
     <label>
         <input type="checkbox" @bind="showAvailableOnly" />
@@ -21,6 +25,7 @@
             <th>Nom</th>
             <th>Éditeur</th>
             <th>Statut</th>
+            <th>Actions</th>
         </tr>
     </thead>
     <tbody>
@@ -33,10 +38,21 @@
                 <td>@game.Name</td>
                 <td>@game.Publisher</td>
                 <td>@GetStatusLabel(game.Status)</td>
+                <td>
+                    <button class="btn btn-primary" @onclick="() => selectedGame = game">
+                        Détails
+                    </button>
+                </td>
             </tr>
         }
     </tbody>
 </table>
+@if (selectedGame != null)
+{
+    <h2>@selectedGame.Name</h2>
+    <p>Éditeur : @selectedGame.Publisher</p>
+    <p>Statut : @GetStatusLabel(selectedGame.Status)</p>
+}
 @if (!FilteredGames.Any())
 {
     <p>Aucun jeu ne correspond à votre recherche.</p>
@@ -47,6 +63,7 @@
     private List<Game> games = new();
     private bool showAvailableOnly = false;
     private string searchText = "";
+    private Game? selectedGame;
     protected override void OnInitialized()
     {
         using LudothequeDbContext? db = new LudothequeDbContext();
