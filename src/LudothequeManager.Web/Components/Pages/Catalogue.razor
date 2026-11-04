@@ -1,0 +1,25 @@
+@page "/catalogue"
+@using LudothequeManager.Models
+@using LudothequeManager.Data
+
+<PageTitle>Catalogue</PageTitle>
+
+<h1>Catalogue des jeux</h1>
+
+<ul>
+    @foreach (var game in games)
+    {
+        <li>@game.Name - @game.Publisher</li>
+    }
+</ul>
+
+@code {
+
+    private List<Game> games = new();
+    protected override void OnInitialized()
+    {
+        using LudothequeDbContext? db = new LudothequeDbContext();
+        games = db.Games.ToList();
+    }
+   
+}
