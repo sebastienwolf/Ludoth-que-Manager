@@ -2,6 +2,7 @@
 @rendermode InteractiveServer
 @using LudothequeManager.Models
 @using LudothequeManager.Data
+@inject NavigationManager Navigation
 
 <PageTitle>Ajouter un jeu</PageTitle>
 
@@ -44,9 +45,6 @@
         using var db = new LudothequeDbContext();
         db.Games.Add(game);
         db.SaveChanges();
-
-        message = $"Le jeu « {game.Name} » a été enregistré.";
-        name = "";
-        publisher = "";
+        Navigation.NavigateTo("/catalogue");
     }
 }
