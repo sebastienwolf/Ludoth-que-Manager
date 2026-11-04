@@ -1,12 +1,17 @@
 @page "/catalogue"
 @using LudothequeManager.Models
 @using LudothequeManager.Data
+@rendermode InteractiveServer
 
 <PageTitle>Catalogue</PageTitle>
 
 <h1>Catalogue des jeux</h1>
 
 <table class="table">
+    <label>
+        <input type="checkbox" @bind="showAvailableOnly" />
+        Afficher uniquement les jeux disponibles
+    </label>
     <thead>
         <tr>
             <th>Numéro</th>
@@ -16,7 +21,8 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var game in games)
+        @foreach (var game in games.Where(
+     game => !showAvailableOnly || game.Status == GameStatus.Available))
         {
             <tr>
                 <td>@game.Id</td>
@@ -31,6 +37,7 @@
 @code {
 
     private List<Game> games = new();
+    private bool showAvailableOnly = false;
     protected override void OnInitialized()
     {
         using LudothequeDbContext? db = new LudothequeDbContext();
