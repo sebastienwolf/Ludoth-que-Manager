@@ -1,0 +1,115 @@
+@page "/jeux/supprimer/{Id:int}"
+@rendermode InteractiveServer
+@using System.Data.Common
+@using LudothequeManager.Models
+@using LudothequeManager.Data
+@using Microsoft.EntityFrameworkCore
+@inject NavigationManager Navigation
+@inject ILogger<DeleteGame> Logger
+
+<PageTitle>Supprimer un jeu</PageTitle>
+<h1>Supprimer un jeu</h1>
+
+@if (!string.IsNullOrEmpty(message))
+{
+    <div class="alert alert-danger" role="alert">@message</div>
+}
+@if (game != null)
+{
+    <p><strong>@game.Name</strong> — @game.Publisher</p>
+    @if (blocked)
+    {
+        <p>Ce jeu possède un historique de prêts ou est actuellement emprunté. Il ne peut pas être supprimé afin de conserver le suivi.</p>
+    }
+    else
+    {
+        <p>Confirmer la suppression définitive de ce jeu ? Cette action ne peut pas être annulée.</p>
+        <button type="button" class="btn btn-danger" disabled="@busy" @onclick="Delete">
+            Confirmer la suppression
+        </button>
+    }
+}
+<a class="btn btn-secondary" href="/catalogue">Annuler et revenir au catalogue</a>
+
+@code {
+    [Parameter] public int Id { get; set; }
+    private Game? game;
+    private string message = "";
+    private bool blocked;
+    private bool busy;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        game = null;
+        message = "";
+        blocked = false;
+        try
+        {
+            await using var db = new LudothequeDbContext();
+            game = await db.Games.AsNoTracking().FirstOrDefaultAsync(game => game.Id == Id);
+            if (game == null)
+            {
+                message = "Ce jeu n’existe pas ou a déjà été supprimé.";
+                return;
+            }
+            blocked = game.Status == GameStatus.CheckedOut || await db.Loans.AnyAsync(loan => loan.GameId == Id);
+        }
+        catch (Exception ex) when (ex is DbException or InvalidOperationException)
+        {
+            game = null;
+            Logger.LogError(ex, "Impossible de charger le jeu {GameId}", Id);
+            message = "Impossible de charger le jeu. Vérifie la connexion à la base, puis recharge la page.";
+        }
+    }
+
+    private async Task Delete()
+    {
+        if (busy || blocked || game == null) return;
+        busy = true;
+        message = "";
+        try
+        {
+            await using var db = new LudothequeDbContext();
+            var storedGame = await db.Games.FindAsync(Id);
+            if (storedGame == null)
+            {
+                game = null;
+                message = "Ce jeu a déjà été supprimé.";
+                return;
+            }
+            // Nouvelle vérification au clic : un prêt a pu être créé depuis le chargement.
+            if (storedGame.Status == GameStatus.CheckedOut || await db.Loans.AnyAsync(loan => loan.GameId == Id))
+            {
+                blocked = true;
+                message = "Suppression refusée : ce jeu est emprunté ou possède un historique de prêts.";
+                return;
+            }
+            if (storedGame.Name != game.Name || storedGame.Publisher != game.Publisher || storedGame.Status != game.Status)
+            {
+                game = storedGame;
+                message = "Les informations du jeu ont changé. Vérifie-les avant de confirmer à nouveau.";
+                return;
+            }
+            db.Games.Remove(storedGame);
+            await db.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException ex)
+        {
+            Logger.LogWarning(ex, "Le jeu {GameId} a changé pendant la suppression", Id);
+            game = null;
+            message = "Le jeu a changé ou a déjà été supprimé. Recharge la page.";
+            return;
+        }
+        catch (Exception ex) when (ex is DbException or DbUpdateException or InvalidOperationException)
+        {
+            Logger.LogError(ex, "Impossible de supprimer le jeu {GameId}", Id);
+            message = "Suppression impossible : la base est indisponible ou le jeu est lié à des prêts. Recharge la page avant de réessayer.";
+            return;
+        }
+        finally
+        {
+            busy = false;
+        }
+        Navigation.NavigateTo("/catalogue");
+    }
+}

@@ -16,12 +16,12 @@
 
 <p>@FilteredGames.Count() résultat(s) sur @games.Count() jeux </p>
 
-<table class="table">
-    <label>
+<label>
         <input type="checkbox" @bind="showAvailableOnly" />
         Afficher uniquement les jeux disponibles
     </label>
     
+<table class="table">
     <thead>
         <tr>
             <th>Numéro</th>
@@ -32,9 +32,7 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var game in games.Where(game =>
-            (!showAvailableOnly || game.Status == GameStatus.Available)
-            && game.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase)))
+        @foreach (var game in FilteredGames)
         {
             <tr>
                 <td>@game.Id</td>
@@ -49,6 +47,8 @@
                     <button class="btn btn-primary" @onclick="() => selectedGame = game">
                         Détails
                     </button>
+                    <a class="btn btn-secondary" href="@($"/jeux/modifier/{game.Id}")">Modifier</a>
+                    <a class="btn btn-outline-danger" href="@($"/jeux/supprimer/{game.Id}")">Supprimer</a>
                 </td>
             </tr>
         }

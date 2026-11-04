@@ -1,0 +1,119 @@
+@page "/jeux/modifier/{Id:int}"
+@rendermode InteractiveServer
+@using System.Data.Common
+@using LudothequeManager.Models
+@using LudothequeManager.Data
+@using Microsoft.EntityFrameworkCore
+@inject NavigationManager Navigation
+@inject ILogger<EditGame> Logger
+
+<PageTitle>Modifier un jeu</PageTitle>
+<h1>Modifier un jeu</h1>
+
+@if (!string.IsNullOrEmpty(message))
+{
+    <div class="alert alert-danger" role="alert">@message</div>
+}
+@if (loaded)
+{
+    <form @onsubmit="SaveGame" @onsubmit:preventDefault>
+        <fieldset disabled="@busy">
+            <label for="game-name">Nom du jeu</label>
+            <input id="game-name" class="form-control" @bind="name" required />
+            <label for="game-publisher">Éditeur</label>
+            <input id="game-publisher" class="form-control" @bind="publisher" required />
+            <button type="submit" class="btn btn-primary mt-3">Enregistrer</button>
+        </fieldset>
+    </form>
+}
+<a class="btn btn-secondary mt-3" href="/catalogue">Annuler et revenir au catalogue</a>
+
+@code {
+    [Parameter] public int Id { get; set; }
+    private string name = "";
+    private string publisher = "";
+    private string originalName = "";
+    private string originalPublisher = "";
+    private string message = "";
+    private bool loaded;
+    private bool busy;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        loaded = false;
+        message = "";
+        try
+        {
+            await using var db = new LudothequeDbContext();
+            var game = await db.Games.AsNoTracking().FirstOrDefaultAsync(game => game.Id == Id);
+            if (game == null)
+            {
+                message = "Ce jeu n’existe pas ou a déjà été supprimé.";
+                return;
+            }
+            name = originalName = game.Name;
+            publisher = originalPublisher = game.Publisher;
+            loaded = true;
+        }
+        catch (Exception ex) when (ex is DbException or InvalidOperationException)
+        {
+            Logger.LogError(ex, "Impossible de charger le jeu {GameId}", Id);
+            message = "Impossible de charger le jeu. Vérifie la connexion à la base, puis recharge la page.";
+        }
+    }
+
+    private async Task SaveGame()
+    {
+        if (busy || !loaded) return;
+        message = "";
+        if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(publisher))
+        {
+            message = "Le nom et l’éditeur sont obligatoires.";
+            return;
+        }
+        busy = true;
+        try
+        {
+            await using var db = new LudothequeDbContext();
+            var game = await db.Games.FindAsync(Id);
+            if (game == null)
+            {
+                loaded = false;
+                message = "Ce jeu a été supprimé. Les modifications ne peuvent pas être enregistrées.";
+                return;
+            }
+            if (game.Name != originalName || game.Publisher != originalPublisher)
+            {
+                message = "Ce jeu a été modifié ailleurs. Recharge la page avant de recommencer.";
+                return;
+            }
+            var trimmedName = name.Trim();
+            if (await db.Games.AnyAsync(other => other.Id != Id && other.Name == trimmedName))
+            {
+                message = "Un autre jeu porte déjà ce nom.";
+                return;
+            }
+            // On ne modifie que ces deux propriétés : le statut et les prêts sont conservés.
+            game.Name = trimmedName;
+            game.Publisher = publisher.Trim();
+            await db.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException ex)
+        {
+            Logger.LogWarning(ex, "Le jeu {GameId} a changé pendant la modification", Id);
+            message = "Le jeu a changé ou a été supprimé. Recharge la page avant de recommencer.";
+            return;
+        }
+        catch (Exception ex) when (ex is DbException or DbUpdateException or InvalidOperationException)
+        {
+            Logger.LogError(ex, "Impossible de modifier le jeu {GameId}", Id);
+            message = "L’enregistrement a échoué. Tes champs sont conservés : vérifie la connexion puis réessaie.";
+            return;
+        }
+        finally
+        {
+            busy = false;
+        }
+        Navigation.NavigateTo("/catalogue");
+    }
+}
