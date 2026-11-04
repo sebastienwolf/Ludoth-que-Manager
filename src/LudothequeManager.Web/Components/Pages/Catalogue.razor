@@ -37,7 +37,11 @@
                 <td>@game.Id</td>
                 <td>@game.Name</td>
                 <td>@game.Publisher</td>
-                <td>@GetStatusLabel(game.Status)</td>
+                <td>
+                    <span class="badge @GetStatusClass(game.Status)">
+                        @GetStatusLabel(game.Status)
+                    </span>
+                </td>
                 <td>
                     <button class="btn btn-primary" @onclick="() => selectedGame = game">
                         Détails
@@ -51,7 +55,16 @@
 {
     <h2>@selectedGame.Name</h2>
     <p>Éditeur : @selectedGame.Publisher</p>
-    <p>Statut : @GetStatusLabel(selectedGame.Status)</p>
+    <p>
+        Statut :
+        <span class="badge @GetStatusClass(selectedGame.Status)">
+            @GetStatusLabel(selectedGame.Status)
+        </span>
+    </p>
+
+    <button class="btn btn-secondary" @onclick="() => selectedGame = null">
+        Fermer
+    </button>
 }
 @if (!FilteredGames.Any())
 {
@@ -86,5 +99,14 @@
     (!showAvailableOnly || game.Status == GameStatus.Available)
     && game.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase));
     
-   
+    private string GetStatusClass(GameStatus status)
+    {
+        return status switch
+        {
+            GameStatus.Available => "bg-success",
+            GameStatus.CheckedOut => "bg-warning text-dark",
+            GameStatus.Maintenance => "bg-danger",
+            _ => "bg-secondary"
+        };
+    }
 }
