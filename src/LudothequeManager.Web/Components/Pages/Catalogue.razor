@@ -6,12 +6,27 @@
 
 <h1>Catalogue des jeux</h1>
 
-<ul>
-    @foreach (var game in games)
-    {
-        <li>@game.Name - @game.Publisher</li>
-    }
-</ul>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Numéro</th>
+            <th>Nom</th>
+            <th>Éditeur</th>
+            <th>Statut</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var game in games)
+        {
+            <tr>
+                <td>@game.Id</td>
+                <td>@game.Name</td>
+                <td>@game.Publisher</td>
+                <td>@GetStatusLabel(game.Status)</td>
+            </tr>
+        }
+    </tbody>
+</table>
 
 @code {
 
@@ -20,6 +35,19 @@
     {
         using LudothequeDbContext? db = new LudothequeDbContext();
         games = db.Games.ToList();
+
+        
     }
+    private string GetStatusLabel(GameStatus status)
+    {
+        return status switch
+        {
+            GameStatus.Available => "Disponible",
+            GameStatus.CheckedOut => "Emprunté",
+            GameStatus.Maintenance => "En maintenance",
+            _ => "Statut inconnu"
+        };
+    }
+    
    
 }
