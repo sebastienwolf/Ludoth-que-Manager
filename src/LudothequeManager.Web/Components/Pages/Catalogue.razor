@@ -37,6 +37,10 @@
         }
     </tbody>
 </table>
+@if (!FilteredGames.Any())
+{
+    <p>Aucun jeu ne correspond à votre recherche.</p>
+}
 
 @code {
 
@@ -60,6 +64,10 @@
             _ => "Statut inconnu"
         };
     }
+
+    private IEnumerable<Game> FilteredGames => games.Where(game =>
+    (!showAvailableOnly || game.Status == GameStatus.Available)
+    && game.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase));
     
    
 }
