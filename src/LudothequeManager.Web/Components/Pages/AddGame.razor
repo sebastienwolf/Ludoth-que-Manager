@@ -3,6 +3,7 @@
 @using LudothequeManager.Models
 @using LudothequeManager.Data
 @inject NavigationManager Navigation
+using var db = new LudothequeDbContext();
 
 <PageTitle>Ajouter un jeu</PageTitle>
 
@@ -18,7 +19,12 @@
     Enregistrer
 </button>
 
-<p>@message</p>
+@if (!string.IsNullOrWhiteSpace(message))
+{
+    <div class="alert alert-danger mt-3" role="alert">
+        @message
+    </div>
+}
 
 <a href="/catalogue">Retour au catalogue</a>
 
@@ -44,6 +50,14 @@
 
         using var db = new LudothequeDbContext();
         db.Games.Add(game);
+        bool alreadyExists = db.Games.Any(
+    existingGame => existingGame.Name == game.Name);
+
+        if (alreadyExists)
+        {
+            message = "Un jeu avec ce nom existe déjà.";
+            return;
+        }
         db.SaveChanges();
         Navigation.NavigateTo("/catalogue");
     }
